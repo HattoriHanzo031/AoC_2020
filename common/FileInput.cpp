@@ -17,7 +17,7 @@ bool FileInput::getInput(std::vector<std::string>& input)
 	std::string line;
 	
 	if (!file.is_open()) {
-		std::cout << "File not open";
+		std::cout << "File not open" << std::endl;
 		return false;
 	}
 	
@@ -35,7 +35,7 @@ bool FileInput::getInput(std::vector<int>& input)
 	std::string line;
 	
 	if (!file.is_open()) {
-		std::cout << "File not open";
+		std::cout << "File not open" << std::endl;
 		return false;
 	}
 	
@@ -55,7 +55,7 @@ bool FileInput::resetInput()
 	std::string line;
 	
 	if (!file.is_open()) {
-		std::cout << "File not open";
+		std::cout << "File not open" << std::endl;
 		return false;
 	}
 	
@@ -67,12 +67,11 @@ bool FileInput::resetInput()
 bool FileInput::getNext(std::string& input)
 {
 	if (!file.is_open()) {
-		std::cout << "File not open";
+		std::cout << "File not open" << std::endl;
 		return false;
 	}
 
 	if (file.peek() == EOF) {
-		std::cout << "EOF";
 		return false;
 	}
 
@@ -84,14 +83,14 @@ bool FileInput::getNext(int& input)
 {
 	std::string line;
 	if (!file.is_open()) {
-		std::cout << "File not open";
+		std::cout << "File not open" << std::endl;
 		return false;
 	}
 
 	if (file.peek() == EOF) {
-		std::cout << "EOF";
 		return false;
 	}
+
 	file >> input;
 	return true;
 }
