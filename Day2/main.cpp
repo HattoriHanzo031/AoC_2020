@@ -3,12 +3,14 @@
 #include <algorithm>
 #include "FileInput.hpp"
 
-struct passRule {
+class passRule {
+protected:
 	int min;
 	int max;
 	char c;
 	std::string pass;
 
+public:
 	passRule(std::string line)
 	{
 		std::stringstream ss(line);
@@ -32,6 +34,23 @@ struct passRule {
 	}
 };
 
+class passRule2 : public passRule {
+public:
+	passRule2(std::string line) : passRule(line)
+	{
+	}
+
+	bool inline isValid() const
+	{
+		return (pass[min-1] == c) ^ (pass[max-1] == c);
+	}
+
+	operator bool() const
+	{
+		return this->isValid();
+	}
+};
+
 int main (int argc, char* argv[])
 {
 	(void) argc;
@@ -41,7 +60,7 @@ int main (int argc, char* argv[])
 	std::string line;
 
 	while (input.getNext(line)) {
-		if (passRule(line)) {
+		if (passRule2(line)) {
 			num_valid++;
 		}
 	}
