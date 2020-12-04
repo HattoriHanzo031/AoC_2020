@@ -3,10 +3,12 @@
 #include <algorithm>
 #include "FileInput.hpp"
 
-int num_trees(std::vector<std::pair<int, int>>& map, int rows, int columns, std::pair<int, int> slope) {
+int num_trees(std::vector<std::string>& map, std::pair<int, int> slope) {
 	int num = 0;
-	for (int i = 0; i<rows; i++) {
-		if (std::find(map.begin(), map.end(), std::pair<int,int>((i*slope.first) % columns, i*slope.second)) != map.end()) {
+	int columns = map[0].size();
+
+	for (unsigned i = 0; i < map.size()/slope.second; i++) {
+		if (map[i*slope.second].at((i*slope.first) % columns) == '#') {
 			num++;
 		}
 	}
@@ -19,27 +21,19 @@ int main (int argc, char* argv[])
 	(void) argv;
 	FileInput input("Day3/input.txt");
 	std::string line;
-	int x = 0;
-	int y = 0;
+
 	long num = 1;
 
-	std::vector<std::pair<int, int>> map;
+	std::vector<std::string> map;
 
 	while (input.getNext(line)) {
-		x=-1;
-		while (true) {
-			x = line.find('#', x+1);
-			if(x == (int)std::string::npos)
-				break;
-			map.push_back(std::pair<int,int>(x,y));
-		}
-		y++;
+		map.push_back(line);
 	}
 
 	std::vector<std::pair<int, int>> slopes = {{1,1}, {3,1}, {5,1}, {7,1}, {1,2}};
 
 	for(auto i=slopes.begin(); i!=slopes.end(); i++) {
-		num *= num_trees(map, y, line.size(), *i);
+		num *= num_trees(map, *i);
 	}
 
 	std::cout << "Resenje je: " << num << std::endl;
