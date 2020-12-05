@@ -33,6 +33,6 @@ int main (int argc, char* argv[])
         seat++;
     }
 
-    std::cout << "Seat ID: " << seat-1 << std::endl;
+    std::cout << "Seat ID: " << seat << std::endl;
     return 0;
 }
