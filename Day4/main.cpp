@@ -7,110 +7,76 @@
 #include <iostream>
 #include <fstream>
 
-class passport {
-	int byr;
-	int iyr;
-	int eyr;
-	int hgt;
-	std::string hcl;
-	std::string ecl;
-	std::string pid;
-	int cid;
-
-public:
-    passport()
-    {
-        clear();
-    }
-
-    void update(std::string line)
-    {
-        std::stringstream ss(line);
+bool chekPassport(std::vector<std::string>& niz)
+{
+    for (auto token : niz) {
         std::string key;
-        std::string token;
-        while (ss.peek() != EOF) {
-            std::cmatch m;
-            ss >> token;
-            std::stringstream sss(token);
-            std::getline(sss, key, ':');
-            if (key == "byr") {
-                sss >> byr;
-                if(byr<1920 || byr>2002)
-                    byr = -1;
-            } else if (key == "iyr") {
-                sss >> iyr;
-                if(iyr<2010 || iyr>2020)
-                    iyr = -1;
-            } else if (key == "eyr") {
-                sss >> eyr;
-                if(eyr<2020 || eyr>2030)
-                    eyr = -1;
-            } else if (key == "hgt") {
-                sss >> hgt;
-                std::string unit;
-                sss >> unit;
-                if (unit == "cm") {
-                    if ((hgt<150) || (hgt>193)) {
-                        hgt = -1;
-                    }
-                } else if (unit == "in") {
-                    if ((hgt<59) || (hgt>76)) {
-                        hgt = -1;
-                    }
-                } else {
-                    hgt = -1;
+        int intValue;
+        std::string value;
+        std::cmatch m;
+
+        if (niz.size() < 7)
+            return false;
+
+        std::stringstream ss(token);
+        std::getline(ss, key, ':');
+        ss >> value;
+        if (key == "byr") {
+            intValue = stoi(value);
+            if(intValue<1920 || intValue>2002)
+                return false;
+        } else if (key == "iyr") {
+            intValue = stoi(value);
+            if(intValue<2010 || intValue>2020)
+                return false;
+        } else if (key == "eyr") {
+            intValue = stoi(value);
+            if(intValue<2020 || intValue>2030)
+                return false;
+        } else if (key == "hgt") {
+            std::stringstream sss(value);
+            std::string unit;
+            sss >> intValue;
+            sss >> unit;
+            if (unit == "cm") {
+                if ((intValue<150) || (intValue>193)) {
+                    return false;
                 }
-                /*std::regex re("1[5-8][0-9]cm|19[0-3]cm|[5-6][0-9]in|[7][0-6]in");
-                if (!std::regex_match(hgt.c_str(), m, re)) {
-                    hgt = "";
-                }*/
-            } else if (key == "hcl") {
-                sss >> hcl;
-                std::regex re("#[0-9a-f]{6}");
-                if (!std::regex_match(hcl.c_str(), m, re)) {
-                    hcl = "";
+            } else if (unit == "in") {
+                if ((intValue<59) || (intValue>76)) {
+                    return false;
                 }
-            } else if (key == "ecl") {
-                sss >> ecl;
-                std::regex re("amb|blu|brn|gry|grn|hzl|oth");
-                if (!std::regex_match(ecl.c_str(), m, re)) {
-                    ecl = "";
-                }
-            } else if (key == "pid") {
-                sss >> pid;
-                std::regex re("[0-9]{9}");
-                if (!std::regex_match(pid.c_str(), m, re)) {
-                    pid = "";
-                }
-            } else if (key == "cid") {
-                sss >> cid;
+            } else {
+                return false;
             }
+            /*std::regex re("1[5-8][0-9]cm|19[0-3]cm|[5-6][0-9]in|[7][0-6]in");
+            if (!std::regex_match(hgt.c_str(), m, re)) {
+                hgt = "";
+            }*/
+        } else if (key == "hcl") {
+            std::regex re("#[0-9a-f]{6}");
+            if (!std::regex_match(value.c_str(), m, re)) {
+                return false;
+            }
+        } else if (key == "ecl") {
+            std::regex re("amb|blu|brn|gry|grn|hzl|oth");
+            if (!std::regex_match(value.c_str(), m, re)) {
+                return false;
+            }
+        } else if (key == "pid") {
+            std::regex re("[0-9]{9}");
+            if (!std::regex_match(value.c_str(), m, re)) {
+                return false;
+            }
+        } else if (key == "cid") {
+            if (niz.size() == 7)
+                return false;
+        } else {
+            return false;
         }
     }
-
-    void clear() 
-    {
-        byr = -1;
-        iyr = -1;
-        eyr = -1;
-        hgt = -1;
-        hcl = "";
-        ecl = "";
-        pid = "";
-        cid = -1;
-    }
-
-    bool isValid() const
-    {
-        //std::cout << byr << "\t\t" <<  iyr << "\t\t" <<  eyr << "\t\t" <<  hgt << "\t\t" <<  hcl << "\t\t" <<  ecl << "\t\t" <<  pid << "\t\t" <<  cid << std::endl;
-        return (byr != -1) && (iyr != -1) && (eyr != -1) && (hgt != -1) && (hcl != "") && (ecl != "") && (pid != "");
-    }
-
-	operator bool() const
-	{
-		return isValid();
-	}
-};
+    return true;
+}
 
 int main (int argc, char* argv[])
 {
@@ -118,16 +84,21 @@ int main (int argc, char* argv[])
 	(void) argv;
     std::ifstream file("Day4/input.txt");
 	std::string line;
-    passport pas;
 	long num = 0;
+    std::vector<std::string> niz;
 
 	while (getline(file, line)) {
         if (line.size() == 0 || file.peek() == EOF) {
-            if (pas)
+            if (chekPassport(niz))
                 num++;
-            pas.clear();
+
+            niz.clear();
         }
-        pas.update(line);
+        std::string segment;
+        std::stringstream ss(line);
+        while (ss >> segment) {
+            niz.push_back(segment);
+        }
 	}
 
     std::cout << num << std::endl;
