@@ -1,21 +1,17 @@
-#include <string.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
-
-#define MAX_QUESTIONS ('z' - 'a' + 1) // number of possible questions
+#include <map>
 
 int sumGroupAnswers(std::vector<std::string>& answers) {
-    unsigned numAnswers[MAX_QUESTIONS] = {0}; // number of answers for each possible question
+    std::map<char, unsigned> numAnswers; // number of answers for each question
     int everyoneAnswered = 0;
 
     for (auto answer : answers) {
         for (char c : answer) {
-            int index = c -'a';
-            numAnswers[index]++;
-            // if (numAnswers[index] == 1) { // Part 1
-            if (numAnswers[index] == answers.size()) { // everyone answered this question
-                everyoneAnswered++;
+            unsigned num = ++numAnswers[c];     // increase number of answers for this question
+            if (num == answers.size()) { // if (num == 1) { // Part 1
+                everyoneAnswered++;  // everyone answered this question
             }
         }
     }
@@ -39,6 +35,6 @@ int main()
         }
 	}
 
-    std::cout << sum << std::endl;
+    std::cout << "Ukupno: " << sum << std::endl;
     return 0;
 }
