@@ -82,22 +82,23 @@ int main (int argc, char* argv[])
 {
 	(void) argc;
 	(void) argv;
-    std::ifstream file("Day4/input.txt");
+    std::ifstream file("Day4/inputJ.txt");
 	std::string line;
 	long num = 0;
     std::vector<std::string> niz;
 
 	while (getline(file, line)) {
+        std::string segment;
+        std::stringstream ss(line);
+        while (ss >> segment) {
+            niz.push_back(segment);
+        }
+
         if (line.size() == 0 || file.peek() == EOF) {
             if (chekPassport(niz))
                 num++;
 
             niz.clear();
-        }
-        std::string segment;
-        std::stringstream ss(line);
-        while (ss >> segment) {
-            niz.push_back(segment);
         }
 	}
 
