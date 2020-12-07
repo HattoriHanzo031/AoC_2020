@@ -23,7 +23,7 @@ void calculatePart1(
     }
 }
 
-int calculatePart2(std::map<std::string, std::vector<bagRule>>& contains, std::string& currentId)
+int calculatePart2(std::map<std::string, std::vector<bagRule>>& contains, const std::string& currentId)
 {
     int sum = 1; // 1 to include the current bag also
     auto parrents = contains[currentId];
@@ -41,6 +41,10 @@ int main()
     std::string color;
     std::map<std::string, std::vector<std::string>> containedIn;
     std::map<std::string, std::vector<bagRule>> contains;
+
+    if (!file.is_open()) {
+        return -1;
+    }
 
 	while (getline(file, line)) {
         std::string token;
