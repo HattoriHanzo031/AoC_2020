@@ -6,51 +6,24 @@
 #include <sstream>
 
 struct bagRule {
-    bagRule(int _num, uint16_t _id) : num(_num), id(_id) {}
+    bagRule(int _num, std::string _id) : num(_num), id(_id) {}
     int num;
-    uint16_t id;
+    std::string id;
 };
 
-uint8_t textureToId(std::string& texture) {
-    static uint8_t ID = 0;
-    static std::map<std::string, uint8_t> textures;
-
-    auto it = textures.find(texture);
-    if (it != textures.end())
-        return it->second;
-
-    textures.insert(std::make_pair(texture, ID));
-    return ID++;
-}
-
-uint8_t colorToId(std::string& color) {
-    static uint8_t ID = 0;
-    static std::map<std::string, uint8_t> colors;
-
-    auto it = colors.find(color);
-    if (it != colors.end())
-        return it->second;
-
-    colors.insert(std::make_pair(color, ID));
-    return ID++;
-}
-
-uint16_t stringToId(std::string& texture, std::string& color)
-{
-    return (textureToId(texture) << 8) + colorToId(color);
-}
-
-void calculatePart1(std::map<uint16_t, std::vector<uint16_t>>& containedIn, std::unordered_set<uint16_t>& out, uint16_t currentId)
+void calculatePart1(
+        std::map<std::string, std::vector<std::string>>& containedIn, 
+        std::unordered_set<std::string>& bagsContainingMine, 
+        std::string& currentId)
 {
     auto parrents = containedIn[currentId];
     for (auto parrent : parrents) {
-        out.insert(parrent);
-        calculatePart1(containedIn, out, parrent);
+        bagsContainingMine.insert(parrent);
+        calculatePart1(containedIn, bagsContainingMine, parrent);
     }
 }
 
-
-int calculatePart2(std::map<uint16_t, std::vector<bagRule>>& contains, uint16_t currentId)
+int calculatePart2(std::map<std::string, std::vector<bagRule>>& contains, std::string& currentId)
 {
     int sum = 1; // 1 to include the current bag also
     auto parrents = contains[currentId];
@@ -66,8 +39,8 @@ int main()
 	std::string line;
     std::string texture;
     std::string color;
-    std::map<uint16_t, std::vector<uint16_t>> containedIn;
-    std::map<uint16_t, std::vector<bagRule>> contains;
+    std::map<std::string, std::vector<std::string>> containedIn;
+    std::map<std::string, std::vector<bagRule>> contains;
 
 	while (getline(file, line)) {
         std::string token;
@@ -75,7 +48,7 @@ int main()
 
         ss >> texture;
         ss >> color;
-        uint16_t parrent = stringToId(texture, color);
+        std::string parrent(texture.append(color));
 
         ss >> token >> token; // ignore "bag(s) contain"
         
@@ -87,7 +60,7 @@ int main()
             int num = std::stoi(token);
             ss >> texture;
             ss >> color;
-            uint16_t bagId = stringToId(texture, color);
+            std::string bagId(texture.append(color));
 
             containedIn[bagId].push_back(parrent);
             contains[parrent].push_back(bagRule(num, bagId));
@@ -98,13 +71,13 @@ int main()
         }
 	}
 
-    std::unordered_set<uint16_t> bagsContainingMine;
-    texture = "shiny";
-    color = "gold";
-    calculatePart1(containedIn, bagsContainingMine, stringToId(texture, color));
+    std::string myBag("shinygold");
+
+    std::unordered_set<std::string> bagsContainingMine;
+    calculatePart1(containedIn, bagsContainingMine, myBag);
     std::cout << "Kofera u koji ide moj kofer: " << bagsContainingMine.size() << std::endl;
 
-    int sum = calculatePart2(contains, stringToId(texture, color)) - 1; // -1 to exclude mmy bag
+    int sum = calculatePart2(contains, myBag) - 1; // -1 to exclude mmy bag
     std::cout << "Ukupno kofera u mom koferu: " << sum << std::endl;
 
     return 0;
