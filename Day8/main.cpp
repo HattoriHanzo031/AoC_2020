@@ -4,92 +4,77 @@
 #include <map>
 #include <sstream>
 
-typedef void (*operation) (int param);
-
 static int pc;
 static int accumulator;
 
-class instruction {
-    operation op;
-    int param;
-    bool executed;
+enum InstType {
+    ACC,
+    JMP,
+    NOP
+};
 
-    static void acc(int param)
-    {
-        accumulator += param;
-        pc++;
-    }
-
-    static void jmp(int param)
-    {
-        pc += param;
-    }
-
-    static void nop(int param)
-    {
-        (void) param;
-        pc++;
-    }
-
-    static inline const std::map<std::string, operation> operationsMap = {
-        {"acc", acc},
-        {"jmp", jmp},
-        {"nop", nop}
-    };
-
-public:
-    instruction(std::string line) : executed(0)
+struct Instruction {
+    Instruction(std::string line) : 
+        accInc(0),
+        pcInc(1),
+        executed(false)
     {
         std::stringstream ss(line);
-        std::string token;
-        ss >> token;
-        op = operationsMap.find(token)->second;
+        std::string inst;
+        ss >> inst;
         ss >> param;
+
+        if (inst == "acc") {
+            type = ACC;
+            accInc = param;
+        } else if (inst == "jmp") {
+            type = JMP;
+            pcInc = param;
+        } else {
+            type = NOP;
+        }
     }
 
     bool execute()
     {
         if (executed)
             return false;
-        
-        op(param);
+
+        pc += pcInc;
+        accumulator += accInc;
         executed = true;
+
         return true;
     }
 
-    inline int getNext()
-    {
-        return pc;
-    }
-
-    inline int getAcc()
-    {
-        return accumulator;
-    }
+    InstType type;
+    int param;
+    int accInc;
+    int pcInc;
+    bool executed;
 };
-
 
 int main()
 {
     std::ifstream file("Day8/input.txt");
 	std::string line;
-    std::vector<instruction> program;
+    std::vector<Instruction> program;
 
     if (!file.is_open()) {
         return -1;
     }
 
 	while (getline(file, line)) {
-        program.push_back(instruction(line));
+        program.push_back(Instruction(line));
 	}
-    int nextInstruction = 0;
-    while (program[nextInstruction].execute()) {
-        nextInstruction = program[nextInstruction].getNext();
-        if (nextInstruction >= (int)program.size()) {
-            break;
+
+    while (program[pc].execute()) {
+        if (pc >= (int)program.size()) {
+            std::cout << "Program exited. Accumulator value: " << accumulator << std::endl;
+            return 0;
         }
     }
 
-    std::cout << "Accumulator value: " << program[nextInstruction].getAcc() << std::endl;
+    std::cout << "Accumulator value: " << accumulator << std::endl;
     return 0;
 }
