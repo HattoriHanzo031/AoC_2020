@@ -1,13 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <map>
-#include <sstream>
+#include <algorithm>
 
-bool checkValid(std::vector<int>::iterator back, std::vector<int>::iterator front, int num) 
+bool checkValid(std::vector<long>::iterator start, std::vector<long>::iterator end, long num) 
 {
-    for (auto i=back; i!=front; i++)
-        for (auto j=i+1; j!=front+1; j++)
+    for (auto i=start; i!=end; i++)
+        for (auto j=i+1; j!=end+1; j++)
             if ((*i) + (*j) == num)
                 return true;
 
@@ -18,9 +17,9 @@ int main()
 {
     std::ifstream file("Day9/input.txt");
     std::string line;
-    int num;
-
-    std::vector<int> numbers;
+    long num;
+    long invalidNum = 0;
+    std::vector<long> numbers;
 
     if (!file.is_open()) {
         return -1;
@@ -29,16 +28,38 @@ int main()
     while (file >> num)
         numbers.push_back(num);
 
-    auto back = numbers.begin();
-    auto front = numbers.begin() + 25;
+    auto start = numbers.begin();       // start of the range
+    auto end = numbers.begin() + 25;    // end of the range
 
-    while (front != numbers.end()-2) {
-        if (!checkValid(back, front, *(front+1))) {
-            std::cout << "First invalid: " << *(front+1) << std::endl;
+    // go trough all the numbers
+    while (end != numbers.end()-2) {
+        invalidNum = *(end+1);
+        if (!checkValid(start, end, invalidNum)) {
+            std::cout << "First invalid: " << invalidNum << std::endl;
+            break;
+        }
+        // move the search window by one to the right
+        start++;
+        end++;
+    }
+
+    for (start = numbers.begin(); start!=numbers.end()-2; start++) {
+        end = start+1;
+        long sum = (*start) + (*end); // sum first two numbers
+
+        // sum following numbers until sum is greater or equal to invalid number
+        while (sum < invalidNum) {
+            end++; 
+            sum += *end;
+        }
+        // Did we find correct contiguous set of numbers
+        if (sum == invalidNum) {
+            long min = *std::min_element(start, end+1);
+            long max = *std::max_element(start, end+1);
+            std::cout << "Min: " << min << " Max: " << max << " Min+Max: " << min + max << std::endl;
+
             return 0;
         }
-        front++;
-        back++;
     }
 
     std::cout << "No invalid" << std::endl;
