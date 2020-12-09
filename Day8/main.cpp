@@ -4,9 +4,6 @@
 #include <map>
 #include <sstream>
 
-static int pc; // index of the next instrution that will be executed (program counter) 
-static int accumulator;
-
 class Instruction {
 public:
     // Enum used for optimisation (it is faster to check int than string)
@@ -37,7 +34,7 @@ public:
         }
     }
 
-    bool execute()
+    bool execute(int& pc, int& accumulator)
     {
         if (executed)
             return false;
@@ -81,7 +78,7 @@ private:
     bool executed;  // instruction was executed before
 };
 
-void resetProgram(std::vector<Instruction>& program)
+void resetProgram(std::vector<Instruction>& program, int& pc, int& accumulator)
 {
     pc = 0;
     accumulator = 0;
@@ -92,18 +89,21 @@ void resetProgram(std::vector<Instruction>& program)
 int main()
 {
     std::ifstream file("Day8/input.txt");
-	std::string line;
+    std::string line;
     std::vector<Instruction> program;
+
+    int pc = 0; // index of the next instrution that will be executed (program counter)
+    int accumulator = 0;
 
     if (!file.is_open()) {
         return -1;
     }
 
-	while (getline(file, line)) {
+    while (getline(file, line)) {
         program.push_back(Instruction(line));
-	}
+    }
 
-    while (program[pc].execute());
+    while (program[pc].execute(pc, accumulator));
     std::cout << "Accumulator value when entering loop: " << accumulator << std::endl;
 
     // Try fixing the program
@@ -116,7 +116,7 @@ int main()
         else
             continue; // not JMP or NOP so go to next instruction
 
-        while (program[pc].execute()) {
+        while (program[pc].execute(pc, accumulator)) {
             if (pc >= (int)program.size()) {
                 std::cout << "Program exited with accumulator value: " << accumulator << std::endl;
                 return 0;
@@ -128,7 +128,7 @@ int main()
             instrution->updateType(Instruction::NOP);
         else
             instrution->updateType(Instruction::JMP);
-        resetProgram(program);
+        resetProgram(program, pc, accumulator);
     }
 
     std::cout << "No change worked!" << std::endl;
