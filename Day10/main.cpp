@@ -29,14 +29,26 @@ int main()
 
     std::sort(adapters.begin(), adapters.end());
 
-    prev = adapters.rbegin()->jolts + 3; // Device jolts
-    adapters.rbegin()->arrangements = 1; // Only one path to the device from the biggest element
+    prev = adapters.rbegin()->jolts + 3; // Device jolts (Part 1)
+    adapters.rbegin()->arrangements = 1; // Only one possible arrangement for the adapter with highest jolts
     
+    /*
+     * Start from the top and calculate possible arrangements for each adapter by summing up
+     * possible arrangements of all adapters that can be combined with it
+     */
     for (auto adapter = adapters.rbegin(); adapter != adapters.rend(); adapter++) {
+        // Part 1 code
+        // calculate the difference between two adjacent adapters and increment the counter array at that index
         int diff = prev - adapter->jolts;
         counter[diff-1]++;
         prev = adapter->jolts;
+        // End of Part 1 code
 
+        /*
+         * go back maximum of 3 adapters (only ones that can be combined with current adapter)
+         * and sum all their possible arrangements to get the number of possible arrangements
+         * of the current one
+         */
         auto compare = adapter-1;
         while(compare != adapters.rbegin()-1 && (compare->jolts - adapter->jolts) <= 3) {
             adapter->arrangements += compare->arrangements;
@@ -45,8 +57,8 @@ int main()
     }
  
     std::cout << "Number of 1-jolt differences: " << counter[0] << " Number of 3-jolt differences:" << counter[2] \
-              << "\nPart1 solution: " << counter[0] * counter[2] << std::endl;
-    std::cout << "Arrangements " << adapters.begin()->arrangements << std::endl;
+              << "\nPart 1 solution: " << counter[0] * counter[2] << std::endl;
+    std::cout << "Arrangements: " << adapters.begin()->arrangements << std::endl;
 
     return 0;
 }
