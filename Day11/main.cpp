@@ -1,27 +1,91 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <vector>
 
-char updateSeat(std::map<std::pair<int,int>, char>& seats, std::pair<int,int> coordinates, bool& updated)
+struct Direction
 {
-    int countHash = 0;
-    for (int x=-1; x<=1; x++) {
-        for (int y =-1; y<=1; y++) {
-            if (x == 0 && y == 0)
-                continue;
+    Direction(int xIncrement, int yIncrement, int rows, int columns) :
+        xIncrement(xIncrement),
+        yIncrement(yIncrement),
+        xLimit(-1),
+        yLimit(-1)
+    {
+        // Set limits depending on the dirrection
+        if (xIncrement == 1)
+            xLimit = rows-1;
+        else if (xIncrement == -1)
+            xLimit = 0;
 
-            auto seat = seats.find(std::make_pair(coordinates.first+x, coordinates.second+y));
-            if (seat != seats.end() && seat->second == '#')
-                countHash++;
-            else
-                continue;
-        }
+        if (yIncrement == 1)
+            yLimit = columns-1;
+        else if (yIncrement == -1)
+            yLimit = 0;
     }
 
+    // Move one step in this direction. Returns false if the edge is reached
+    bool goDirection(std::pair<int, int>& coordinate)
+    {
+        if(coordinate.first == xLimit || coordinate.second == yLimit)
+            return false;
+
+        coordinate.first += xIncrement;
+        coordinate.second += yIncrement;
+        return true;
+    }
+
+    int xIncrement;
+    int yIncrement;
+    int xLimit;
+    int yLimit;
+};
+
+// Check adjacent seats and return new value for the seat
+char updateSeat(std::map<std::pair<int,int>, char>& seats, std::pair<int,int> coordinates, bool& updated, int rows, int columns)
+{
+    std::vector<Direction> directions = { //8 possible directions
+        Direction(-1, -1, rows, columns),
+        Direction(-1,  0, rows, columns),
+        Direction(-1,  1, rows, columns),
+        Direction( 0, -1, rows, columns),
+        Direction( 0,  1, rows, columns),
+        Direction( 1, -1, rows, columns),
+        Direction( 1,  0, rows, columns),
+        Direction( 1,  1, rows, columns),
+    };
+
+    int countHash = 0;
+
+    // ======== Optimisation ====== //
+    int breakAt = 1;
+    if (seats[coordinates] == '#')
+        breakAt = 5;
+    // ====== End optimisation ==== //
+
+    for (auto dir: directions) { // try all 8 directions
+        auto coord(coordinates);
+        while (dir.goDirection(coord)) { // go one step in selected direction and update new coordinates
+            auto seat = seats.find(coord); // get the seat at new coordinates
+            if (seat == seats.end()) // if there is no seat go one step further
+                continue;
+
+            if(seat->second == '#') // if seat is ocupied, count it
+                countHash++;
+
+            break;
+        }
+
+        // ======== Optimisation ====== //
+        if (countHash >= breakAt)
+            break;
+        // ====== End optimisation ==== //
+    }
+
+    // Check if seat needs to be updated and return new value
     updated = true;
     if (seats[coordinates] == 'L' && countHash == 0) {
         return '#';
-    } else if(seats[coordinates] == '#' && countHash >= 4) {
+    } else if(seats[coordinates] == '#' && countHash >= 5) {
         return 'L'; 
     }
 
@@ -29,6 +93,7 @@ char updateSeat(std::map<std::pair<int,int>, char>& seats, std::pair<int,int> co
     return seats[coordinates];
 }
 
+// Print map (for debugging)
 void printSeats(std::map<std::pair<int,int>, char>& seats, int rows, int columns)
 {
     for (int i = 0; i<rows; i++) {
@@ -58,7 +123,7 @@ int main()
     while (file >> line) {
         column = 0;
         for (auto c : line) {
-            if (c == 'L')
+            if (c == 'L') // insert only the seats and not the blank places
                 seats.insert(std::make_pair(std::make_pair(row, column), c));
 
             column++;
@@ -68,17 +133,19 @@ int main()
     //printSeats(seats, row, column);
 
     std::map<std::pair<int,int>, char> seatsCopy;
-
     bool somethingChanged;
     do {
         somethingChanged = false;
+        // go trough all of the seats
         for (auto it = seats.begin(); it != seats.end(); it++) {
             bool updated;
-            seatsCopy[it->first] = updateSeat(seats, it->first, updated);
+            // need to use copy of the map so that updated values don't affect further calculations
+            seatsCopy[it->first] = updateSeat(seats, it->first, updated, row, column);
 
             somethingChanged = somethingChanged || updated;
         }
-        seats = seatsCopy;
+
+        seats = seatsCopy; // very inefficient TODO: try to switch between two maps instead of copying
         //printSeats(seats, row, column);
     } while (somethingChanged);
 
