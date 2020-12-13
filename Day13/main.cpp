@@ -1,10 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 
 struct Bus {
-    unsigned id;
-    unsigned timeDifference;
+    int id;
+    int timeDifference;
 };
 
 int main()
@@ -18,37 +19,32 @@ int main()
 
     getline(file, line);
 
-    unsigned difference = 0;
+    int difference = 0;
     while (getline(file, line, ',')) {
         if (line != "x")
             busses.push_back({stoi(line), difference});
         difference++;
     }
 
-    for (auto bus : busses) {
-        std::cout << bus.id << " " << bus.timeDifference << std::endl;
-    }
+    long long timestamp = 0; // current timestamp to test
+    long long repeatPeriod = busses[0].id; // number of timestamps after which the current cycle would repeat
+    auto bus = busses.begin()+1; // current bus line to check for alingment
 
-    unsigned long long targetTime = 0;
-    bool foundSolution = false;
-
-    unsigned long long prev = 29;
-
-    while (!foundSolution) {
-        targetTime += busses[0].id;
-        //std::cout << targetTime;
-        foundSolution = true;
-        for (auto bus = busses.begin()+1; bus != busses.end(); bus++) {
-            //std::cout << " ID:" << bus->id << " TD:" << bus->timeDifference << " - " << (targetTime % bus->id) << " "; 
-            if(bus->id - (targetTime % bus->id) != bus->timeDifference) {
-                foundSolution = false;
+    /*
+     * We first find when the bus 0 and bus 1 align (with required time difference) by checking at 
+     * each timestamp the bus 0 arives. The same alingment will ocurr after bus0 ID * bus1 ID timestamps
+     * so we check only after that period for the next bus. Do the same for all remaining busses.
+     */
+    while (true) {
+        timestamp += repeatPeriod;
+        if((timestamp + bus->timeDifference) % bus->id == 0) {
+            repeatPeriod *= bus->id;
+            if (++bus == busses.end())
                 break;
-            }
         }
-        //std::cout << std::endl;
     }
     
-    std::cout << "Timestamp: " << targetTime << std::endl;
+    std::cout << "Timestamp: " << timestamp << std::endl;
 
     return 0;
 }
