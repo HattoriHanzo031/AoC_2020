@@ -2,39 +2,53 @@
 #include <fstream>
 #include <vector>
 
+struct Bus {
+    unsigned id;
+    unsigned timeDifference;
+};
+
 int main()
 {
     std::string line;
     std::ifstream file("Day13/input.txt");
-    std::vector<int> timestamps;
+    std::vector<Bus> busses;
 
     if (!file.is_open())
         return -1;
 
     getline(file, line);
-    int earliest = std::stoi(line);
-    
+
+    unsigned difference = 0;
     while (getline(file, line, ',')) {
         if (line != "x")
-            timestamps.push_back(stoi(line));
+            busses.push_back({stoi(line), difference});
+        difference++;
     }
 
-    int id = 0;
-    int closest = earliest;
-    for (auto t : timestamps) {
-        // unlikely it will happen but just in case check if the bus arrives exacly at our earliest time 
-        if(earliest % t == 0) {
-            closest = 0;
-            break;
-        }
-
-        int timeToWait = (t - (earliest % t));
-        if (timeToWait < closest) {
-            closest = timeToWait;
-            id = t;
-        }
+    for (auto bus : busses) {
+        std::cout << bus.id << " " << bus.timeDifference << std::endl;
     }
-    std::cout << "ID: " << id << "\tTime to wait: " << closest << "\tSolution: " << id*closest << std::endl;
+
+    unsigned long long targetTime = 0;
+    bool foundSolution = false;
+
+    unsigned long long prev = 29;
+
+    while (!foundSolution) {
+        targetTime += busses[0].id;
+        //std::cout << targetTime;
+        foundSolution = true;
+        for (auto bus = busses.begin()+1; bus != busses.end(); bus++) {
+            //std::cout << " ID:" << bus->id << " TD:" << bus->timeDifference << " - " << (targetTime % bus->id) << " "; 
+            if(bus->id - (targetTime % bus->id) != bus->timeDifference) {
+                foundSolution = false;
+                break;
+            }
+        }
+        //std::cout << std::endl;
+    }
+    
+    std::cout << "Timestamp: " << targetTime << std::endl;
 
     return 0;
 }
