@@ -31,9 +31,10 @@ int main()
     auto bus = busses.begin()+1; // current bus line to check for alingment
 
     /*
-     * We first find when the bus 0 and bus 1 align (with required time difference) by checking at 
-     * each timestamp the bus 0 arives. The same alingment will ocurr after bus0 ID * bus1 ID timestamps
-     * so we check only after that period for the next bus. Do the same for all remaining busses.
+     * We first find when the bus 0 and bus 1 align (with required time difference) by checking at each
+     * timestamp the bus 0 arives. The same alingment will ocurr after bus0 ID * bus1 ID timestamps so we
+     * check only after that period for the next bus. Do the same for all remaining busses. This only works
+     * if all of the bus IDs are prime numbers which they are in my input (and probably all others).
      */
     while (true) {
         timestamp += repeatPeriod;
@@ -45,6 +46,5 @@ int main()
     }
     
     std::cout << "Timestamp: " << timestamp << std::endl;
-
     return 0;
 }
